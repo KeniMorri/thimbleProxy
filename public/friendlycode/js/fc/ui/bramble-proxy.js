@@ -11,11 +11,11 @@ define(["backbone-events"], function(BackboneEvents) {
     "loaded": [],
     "viewlink": []
   };
+  var telegraph;
 
   function BrambleProxy(place, options) {
     var iframe = document.createElement("iframe");
     var latestSource = "(none)";
-    var telegraph;
 
     // Event listening for proxied event messages from our editor iframe.
     window.addEventListener("message", function(evt) {
@@ -69,6 +69,52 @@ define(["backbone-events"], function(BackboneEvents) {
       return place;
     }
   }
+
+  
+  BrambleProxy.prototype.undo = function () {
+    this.onButton("_undo");
+  };
+  BrambleProxy.prototype.redo = function () {
+    this.onButton("_redo");
+  };
+  /* This function handles all button presses within thimble
+   * s_type refers to what command inside brackets is fired off
+   * m_command stands for Menu Command
+   * me_command stands for menu + extra command
+   * v command stands for ViewHandler Commands
+   */
+  BrambleProxy.prototype.onButton = function(command, option) {
+    var sType = "mCommand";
+    var sCommand = "";
+    var sExtra = "";
+    if (command === "_undo") {
+      sCommand = "EDIT_UNDO";
+    }
+    else if (command === "_redo") {
+      sCommand = "EDIT_REDO";
+    }
+    else if (command === "_fontSize") {
+      sType = "vCommand";
+      sCommand = "setFontSize";
+      if (option === "small") {
+        sExtra =  "10";
+      }
+      else if (option === "normal") {
+        sExtra =  "12";
+      }
+      else if (option === "large") {
+        sExtra =  "18";
+      }
+    }
+
+    telegraph.postMessage(JSON.stringify({
+          type: sType,
+          command: sCommand,
+          extra: sExtra
+        }), "*");
+  };
+  
+
 
   BrambleProxy.prototype.on = function on(event, callback) {
     if (event === "change") {
