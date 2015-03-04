@@ -77,40 +77,43 @@ define(["backbone-events"], function(BackboneEvents) {
   BrambleProxy.prototype.redo = function () {
     this.onButton("_redo");
   };
-  /* This function handles all button presses within thimble
-   * s_type refers to what command inside brackets is fired off
-   * m_command stands for Menu Command
-   * me_command stands for menu + extra command
-   * v command stands for ViewHandler Commands
+  /* This function handles all the button presses thimble has,
+   * It takes in 2 parameters, a string representing the command, and a possible option
+   * It packages a JSON object and sends it over post to thimble proxy inside brackets
+   * jType refers to what type of command should be fired inside brackets, these types being:
+   *    mCommand: Menu Command, refers to any command outlined in the menu
+   *    vCommand: View Command, refers to commands inside the ViewHandler
+   * jParams is used in conjunction with vCommand to send extra paramters needed for vCommand
    */
   BrambleProxy.prototype.onButton = function(command, option) {
-    var sType = "mCommand";
-    var sCommand = "";
-    var sExtra = "";
+    var jType = "mCommand";
+    var jCommand = "";
+    var jParams = "";
     if (command === "_undo") {
-      sCommand = "EDIT_UNDO";
+      jCommand = "EDIT_UNDO";
     }
     else if (command === "_redo") {
-      sCommand = "EDIT_REDO";
+      jCommand = "EDIT_REDO";
     }
     else if (command === "_fontSize") {
-      sType = "vCommand";
-      sCommand = "setFontSize";
+      jType = "vCommand";
+      jCommand = "setFontSize";
       if (option === "small") {
-        sExtra =  "10";
+        jParams =  "10";
       }
       else if (option === "normal") {
-        sExtra =  "12";
+        jParams =  "12";
       }
       else if (option === "large") {
-        sExtra =  "18";
+        jParams =  "18";
       }
+      jParams+= "px";
     }
 
     telegraph.postMessage(JSON.stringify({
-          type: sType,
-          command: sCommand,
-          extra: sExtra
+          type: jType,
+          command: jCommand,
+          params: jParams
         }), "*");
   };
   
